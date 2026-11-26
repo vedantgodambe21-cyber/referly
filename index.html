@@ -47,7 +47,7 @@ dialog{border:1px solid var(--line);border-radius:16px;background:var(--surface)
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 /* ====== PASTE YOUR TWO VALUES HERE ====== */
-var SUPABASE_URL="https://mxmyiruwkjxkdskswrfg.supabase.co";
+var SUPABASE_URL="https://mxmyiruwkjxkdskswrfg.supabase.co/rest/v1/";
 var SUPABASE_KEY="sb_publishable_rYrYLY2amzmu43RK1d3fRg_vS9FSrnt";
 /* ======================================== */
 var FREE=["gmail.com","yahoo.com","yahoo.in","outlook.com","hotmail.com","live.com","rediffmail.com","icloud.com","proton.me","protonmail.com"];
@@ -84,14 +84,14 @@ function onboardView(){
  var sel=$("[name=r]");sel.onchange=function(){$("#cl").style.display=sel.value==="referrer"?"grid":"none"};
  $("#pf").onsubmit=async function(e){e.preventDefault();var f=new FormData(e.target),r=f.get("r");
   if(r==="referrer"&&free)return $("#e").textContent="Referrers must sign in with a company email, not "+dom+".";
-  var x=await sb.from("profiles").insert({id:me.id,full_name:f.get("n"),role:r,company:f.get("c")||null,work_email_verified:r==="referrer"});
+  var x=await sb.from("profiles").insert({id:me.id,full_name:f.get("n"),role:r,company:f.get("c")||null,work_email_verified:r==="referrer",email:me.email});
   if(x.error)return $("#e").textContent=x.error.message;boot()};
 }
 function tabsHtml(t){return '<div class="tabs" role="tablist">'+t.map(function(x){return '<button role="tab" aria-selected="'+(tab===x[0])+'" data-tab="'+x[0]+'">'+x[1]+'</button>'}).join("")+'</div>'}
 async function appView(){
  var seek=profile.role==="seeker";
  var t=seek?[["browse","Find a referrer"],["track","My requests"]]:[["post","Post a role"],["inbox","Requests"],["mine","My posts"]];
- $("#root").innerHTML=shell('<p class="mute small" style="margin-top:8px">Hi '+esc(profile.full_name)+(profile.company?' · '+esc(profile.company):'')+'</p>'+tabsHtml(t)+'<div id="body"><p class="mute" style="padding:24px 0">Loading…</p></div>');
+ $("#root").innerHTML=shell('<p class="mute small" style="margin-top:8px">Hi '+esc(profile.full_name)+(profile.company?' · '+esc(profile.company):'')+'</p>'+(profile.role==="referrer"&&!profile.approved?'<div class="box"><h2>Waiting for approval</h2><p class="small mute">We check every new referrer. You can post roles now, but they appear to job seekers only after you are approved.</p></div>':'')+tabsHtml(t)+'<div id="body"><p class="mute" style="padding:24px 0">Loading…</p></div>');
  $("#out").onclick=async function(){await sb.auth.signOut();me=null;boot()};
  document.querySelectorAll("[data-tab]").forEach(function(b){b.onclick=function(){tab=b.dataset.tab;appView()}});
  var b=$("#body");
