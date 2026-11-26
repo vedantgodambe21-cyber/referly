@@ -112,10 +112,10 @@ async function browse(b){
 }
 function reqDialog(pid){
  var p=posts.filter(function(x){return x.id===pid})[0],d=$("#dlg");
- d.innerHTML='<h2>Ask '+esc(p.referrer_name)+' for a referral</h2><p class="small mute">'+esc(p.role_title)+' at '+esc(p.company)+'</p><form id="rf"><label>Top skills<input name="s" placeholder="Java, Spring, SQL" required></label><label>Message<textarea name="m" rows="3" required>Hi, I’m interested in this role and my profile matches. Could you refer me?</textarea></label><label>Resume (PDF or Word, max 5 MB)<input type="file" name="f" accept=".pdf,.doc,.docx" required></label><p class="err" id="e"></p><div style="display:flex;gap:8px"><button class="btn">Send request</button><button class="btn ghost" type="button" id="cx">Cancel</button></div></form>';
- d.showModal();$("#cx").onclick=function(){d.close()};
+ d.innerHTML='<h2>Ask '+esc(p.referrer_name)+' for a referral</h2><p class="small mute">'+esc(p.role_title)+' at '+esc(p.company)+'</p><form id="rf"><label>Top skills<input name="s" placeholder="Java, Spring, SQL" required></label><label>Message<textarea name="m" rows="3" required>Hi, I’m interested in this role and my profile matches. Could you refer me?</textarea></label><label for="fi">Resume (PDF or Word, max 5 MB)</label><div style="display:flex;gap:10px;align-items:center"><button type="button" class="btn ghost" id="pick">Choose file</button><span class="small mute" id="fn">No file chosen</span></div><input type="file" name="f" id="fi" accept=".pdf,.doc,.docx" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" tabindex="-1"><p class="err" id="e"></p><div style="display:flex;gap:8px"><button class="btn">Send request</button><button class="btn ghost" type="button" id="cx">Cancel</button></div></form>';
+ d.showModal();$("#cx").onclick=function(){d.close()};$("#pick").onclick=function(){$("#fi").click()};$("#fi").onchange=function(){$("#fn").textContent=this.files[0]?this.files[0].name:"No file chosen"};
  $("#rf").onsubmit=async function(e){e.preventDefault();var f=new FormData(e.target),file=f.get("f");
-  if(file.size>5*1024*1024)return $("#e").textContent="Resume is over 5 MB.";
+  if(!file||!file.size)return $("#e").textContent="Please choose your resume.";if(file.size>5*1024*1024)return $("#e").textContent="Resume is over 5 MB.";
   var path=me.id+"/"+pid+"-"+Date.now()+"-"+file.name.replace(/[^\w.-]/g,"_");
   var u=await sb.storage.from("resumes").upload(path,file);if(u.error)return $("#e").textContent=u.error.message;
   var r=await sb.from("requests").insert({post_id:pid,seeker_id:me.id,seeker_name:profile.full_name,skills:f.get("s"),message:f.get("m"),resume_path:path});
